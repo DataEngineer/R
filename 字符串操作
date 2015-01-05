@@ -1,0 +1,312 @@
+
+R-字符串操作
+DataEngineer
+Sunday, January 04, 2015
+
+R语言提供了很多字符串操作函数，下面将介绍其中几个函数。
+
+1.1 grep()和grepl()
+
+这两个函数返回向量水平的匹配结果，不涉及匹配字符串的详细位置信息。
+
+grep(pattern,x)函数在字符串向量x中搜索给定字符串pattern。如果x有n个元素，即包含n个字符串，则grep(pattern,x)会返回一个长度不超过n的向量。这个向量的每个元素是x的索引，表示索引对应的元素x[i]中与pattern匹配的字符串。
+
+grepl(pattern,x)函数与grep()函数的参数看起来差不多，但是返回的结果不一样。
+
+grep("xiao",c("xiao liu","da liu","xiao wang"))
+
+## [1] 1 3
+
+grep("Xiao",c("xiao liu","da liu","xiao wang"))
+
+## integer(0)
+
+grepl("xiao",c("xiao liu","da liu","xiao wang"))
+
+## [1]  TRUE FALSE  TRUE
+
+grepl("Xiao",c("xiao liu","da liu","xiao wang"))
+
+## [1] FALSE FALSE FALSE
+
+第一条命令表示在第2个参数里的第1和第3个元素中查找到字符串“xiao”。第二条命令表示在第2个参数里找不熬到字符串“Xiao”，所以返回一个空向量。
+
+grep仅返回匹配项的下标，而grepl返回所有的查询结果，并用逻辑向量表示有没有找到匹配。两者的结果用于提取数据子集的结果都一样：
+
+a=c("xiao liu","da liu","xiao wang")
+a[grep("xiao",a)]
+
+## [1] "xiao liu"  "xiao wang"
+
+a[grepl("xiao",a)]
+
+## [1] "xiao liu"  "xiao wang"
+
+1.2 nchar()
+
+nchar(x)函数返回字符串x的长度。
+
+nchar("xiao liu")
+
+## [1] 8
+
+注意：如果x不是字符形式，nchar()会得到不可预料的结果，如nchar(NA)的结果是2，而nchar(factor(“abc”))的结果是1.对于费字符串对象，如果想得到更一致的结果，可以使用stringr包。
+
+1.3 paste()
+
+paste(…)函数可以将若干个字符串拼接起来，返回一个长字符串。
+
+paste("xiao","liu")
+
+## [1] "xiao liu"
+
+paste("xiao","liu",sep="")
+
+## [1] "xiaoliu"
+
+paste("xiao","liu",sep=".")
+
+## [1] "xiao.liu"
+
+paste("xiao","liu","and","xiao","wang")
+
+## [1] "xiao liu and xiao wang"
+
+paste("A",1:6)
+
+## [1] "A 1" "A 2" "A 3" "A 4" "A 5" "A 6"
+
+sep用于指定字符串组件之间的连接符号，默认为空格。
+
+1.4 sprintf()
+
+printf(…)函数按一定格式把若干个元素（字符串或变量）组合成字符串。
+
+i<-7
+s<-sprintf("The square of %d is %d",i,i^2)
+s
+
+## [1] "The square of 7 is 49"
+
+1.5 substr()和substring()
+
+substr(x,start,stop)函数返回字符串x中指定位置范围start-stop之间的字符串。
+
+substring(x,first,last=1000000)函数可以不用指定结束位置，如果字符串的长度小于1000000，则默认取到字符串的结尾处。
+
+这两个函数可以用于字符串替换。
+
+substr("xiao",2,3)
+
+## [1] "ia"
+
+substring("xiao",2,3)
+
+## [1] "ia"
+
+substring("xiao",2)
+
+## [1] "iao"
+
+x="xiao"
+substr(x,2,3)<-"xo"
+x
+
+## [1] "xxoo"
+
+substring(x,2,3)<-"xo"
+x
+
+## [1] "xxoo"
+
+1.6 strsplit()
+
+strsplit(x,split,fixed=FALSE)函数根据split将字符串x拆分成若干子字符串，fixed为TRUE时表示精确匹配，否则表示可以使用正则表达式。结果为一个列表。
+
+strsplit("2015-1-4",split="-")
+
+## [[1]]
+## [1] "2015" "1"    "4"
+
+可以使用unlist()函数将结果，由列表形式转换为向量。
+
+unlist(strsplit("2015-1-4",split="-"))
+
+## [1] "2015" "1"    "4"
+
+1.7 gregexpr()、regexpr()和regexec()
+
+这三个函数返回的结果包括匹配的具体位置和字符串的长度信息。
+
+gregexpr(pattern,text)返回的是pattern匹配的全部子字符串的起始位置。而regexpr(pattern,text)和regexec(pattern,text)在字符串text中寻找模式pattern，返回与模式pattern匹配的第一个子字符串的起始字符位置，二者的不同在于regexpr返回的是一个向量，而regexec返回的是一个列表。
+
+gregexpr("xiao","xiao liu and xiao wang")
+
+## [[1]]
+## [1]  1 14
+## attr(,"match.length")
+## [1] 4 4
+## attr(,"useBytes")
+## [1] TRUE
+
+regexpr("xiao","xiao liu and xiao wang")
+
+## [1] 1
+## attr(,"match.length")
+## [1] 4
+## attr(,"useBytes")
+## [1] TRUE
+
+class(regexpr("xiao","xiao liu and xiao wang"))
+
+## [1] "integer"
+
+regexec("xiao","xiao liu and xiao wang")
+
+## [[1]]
+## [1] 1
+## attr(,"match.length")
+## [1] 4
+
+class(regexec("xiao","xiao liu and xiao wang"))
+
+## [1] "list"
+
+1.8 strtrim()
+
+strtrim(x,width)函数从字符串x的左端起截取长度为width的子字符串。如果width的值大于字符串x的长度，则取到x的结尾。
+
+strtrim(c("abcdef","abcdef","abcdef"),c(2,4,8))
+
+## [1] "ab"     "abcd"   "abcdef"
+
+1.10 tolower()、toupper()和capitalize()
+
+tolower()用于将字符转化为小写字母；toupper()用于将字符转化为大写字母;Hmisc包中的capitalize()函数可以使字符串的首字母大写。
+
+a<-"ABcdEfG"
+tolower(a)
+
+## [1] "abcdefg"
+
+toupper(a)
+
+## [1] "ABCDEFG"
+
+library(Hmisc)
+
+## Warning: package 'Hmisc' was built under R version 3.0.3
+
+## Loading required package: grid
+## Loading required package: lattice
+
+## Warning: package 'lattice' was built under R version 3.0.3
+
+## Loading required package: survival
+## Loading required package: splines
+## Loading required package: Formula
+## 
+## Attaching package: 'Hmisc'
+## 
+## The following objects are masked from 'package:base':
+## 
+##     format.pval, round.POSIXt, trunc.POSIXt, units
+
+capitalize(tolower(a))
+
+## [1] "Abcdefg"
+
+1.11 chartr()
+
+chartr()函数用于字符的替换。
+
+chartr("Tt","Uu","AtGCtttACC")
+
+## [1] "AuGCuuuACC"
+
+在此，将字符串中的“T”用“U”替换，“t”用“u”替换。
+
+1.12 sub()和gsub()
+
+sub()函数和gsub()函数用于字符串的替换，对参数传值不传址。sub()和gsub()的区别是前者只做一次替换（不管有几次匹配），而后者替换满足条件的所有匹配
+
+text<-"Hello R! Hello Liu!"
+sub("Liu","world",text)
+
+## [1] "Hello R! Hello world!"
+
+gsub("Hello","Hi",text)
+
+## [1] "Hi R! Hi Liu!"
+
+text
+
+## [1] "Hello R! Hello Liu!"
+
+    正则表达式
+
+正则表达式是一种通配符，用来描述一系列字符串的简略表达式。在R中，grep()、grepl()、sub()、gsub()、regexpr()、gregexpr()和strsplit()等函数都使用正则表达式的规则进行匹配。
+
+2.1 表达式“[au]”表示的是含有字母a或u的字符串。使用方法如下：
+
+grep("[au]",c("Equator","North Pole","South Pole"))
+
+## [1] 1 3
+
+结果表明，c(“Equator”,“North Pole”,“South Pole”)的第1个和第3个元素，即“Equator”和“South Pole”中包含a或u。
+
+2.2 “.”表示除了换行符以外的任一字符。“*”表示其前的字符进行0个或多个匹配。“?”表示其前的字符进行0或1个匹配。“+”表示其前的字符进行1个或多个匹配。“.*”可以匹配任意字符。使用方法如下：
+
+grep("o.e",c("Equator","North Pole","South Pole"))
+
+## [1] 2 3
+
+grep("a*bc",c("bc","abc","aabc","aaabc"))
+
+## [1] 1 2 3 4
+
+grep("ba?bc",c("bbc","babc","baabc","baaabc"))
+
+## [1] 1 2
+
+grep("a+bc",c("bc","abc","aabc","aaabc"))
+
+## [1] 2 3 4
+
+2.3 使用“\\”进行转义。例如要匹配英文句点，则需要使用“\\”。使用方法如下：
+
+grep("\\.",c("abc","de","f.g"))
+
+## [1] 3
+
+2.4 2.4 “^”放在表达式开头表示匹配文本开始的位置，放在方括号内开始处表示非方括号内的任意字符。使用方法如下：
+
+grep("^l",c("Hello","liu"))
+
+## [1] 2
+
+grep("[^liu]",c("Hello","liu"))
+
+## [1] 1
+
+2.5 “$”匹配一个字符串的结尾。使用方法如下：
+
+grep("o$",c("Hello","you"))
+
+## [1] 1
+
+2.6 “|”表示逻辑的或，即“|”前后的表达式任选一个。
+
+grep("e|u",c("Hello","you"))
+
+## [1] 1 2
+
+2.7 大括号“{}”表示前面的字符或表达式的重复次数。
+
+grep("bca{2}bc",c("bcabc","bcaabc","bcaaabc"))
+
+## [1] 2
+
+2.8 “\d”表示数字0-9，“\D”表示非数字，“\s”表示空白字符（包括空格、制表符、换行符等），“\S”表示非空白字符，“\w”表示字（字母和数字），“\W”表示非字，“\<”和“\>”分别表示以空白字符开始和结束的文本。
+
+以上是最基础的正则表达式字符，在一些正则表达式的书籍和资料中有非常详细的介绍。需要提一下的是“贪婪”和“懒惰”的匹配规则。默认情况下是匹配尽可能多的字符，即为贪婪匹配，如果要进行懒惰匹配，也就是匹配最短的字串，只需要在后面加个“?”即可。
